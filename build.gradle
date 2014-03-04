@@ -1,0 +1,77 @@
+allprojects {
+    apply plugin: 'idea'
+    group = 'com.webninjapr.api.plugins'
+    version = '0.1'
+    defaultTasks 'clean', 'build'
+}
+
+idea.project {
+    jdkName = '1.7'
+
+    ipr.withXml { provider ->
+        def node = provider.asNode()
+
+        // Use GIT
+        def vcsConfig = node.component.find { it.'@name' == 'VcsDirectoryMappings' }
+        vcsConfig.mapping[0].'@vcs' = 'Git'
+
+        // Set Gradle home
+        def gradleSettings = node.appendNode('component', [name: 'GradleSettings'])
+        gradleSettings.appendNode('option', [name: 'SDK_HOME', value: gradle.gradleHomeDir])
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.11'
+}
+
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
+group = 'com.webninjapr.api.plugins'
+version = '0.1'
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url "$buildDir/repo" // change to point to your repo, e.g. http://my.org/repo
+        }
+    }
+}
+
+apply plugin: 'groovy'
+
+//buildscript {
+//    repositories {
+//        mavenCentral()
+//    }
+//
+//    dependencies {
+//        classpath 'org.robovm:robovm-compiler:0.0.9'
+////        classpath 'org.robovm:robovm-rt:0.0.9'
+////        classpath 'org.robovm:robovm-objc:0.0.9'
+////        classpath 'org.robovm:robovm-cocoatouch:0.0.9'
+////        classpath 'org.robovm:robovm-cacerts-full:0.0.9'
+//    }
+//}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies{
+    compile gradleApi()
+    compile localGroovy()
+    compile 'org.robovm:robovm-compiler:0.0.9'
+//    compile 'org.robovm:robovm-rt:0.0.9'
+//    compile 'org.robovm:robovm-objc:0.0.9'
+//    compile 'org.robovm:robovm-cocoatouch:0.0.9'
+//    compile 'org.robovm:robovm-cacerts-full:0.0.9'
+}
+
+
