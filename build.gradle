@@ -64,14 +64,27 @@ repositories {
     mavenCentral()
 }
 
+configurations {
+    includeInJar
+}
+
 dependencies{
     compile gradleApi()
     compile localGroovy()
-    compile 'org.robovm:robovm-compiler:0.0.9'
+    includeInJar 'org.robovm:robovm-compiler:0.0.9'
+    configurations.compile.extendsFrom(configurations.includeInJar)
 //    compile 'org.robovm:robovm-rt:0.0.9'
 //    compile 'org.robovm:robovm-objc:0.0.9'
 //    compile 'org.robovm:robovm-cocoatouch:0.0.9'
 //    compile 'org.robovm:robovm-cacerts-full:0.0.9'
+}
+
+//uberJar task From Gradle Cookbook || http://wiki.gradle.org/display/GRADLE/Cookbook#Cookbook-Creatingafatjar
+//http://www.techques.com/question/1-3445825/gradle---how-do-I-build-a-jar-with-a-lib-dir-with-other-jars-in-it
+jar {
+    into('lib') {
+        from configurations.includeInJar
+    }
 }
 
 
