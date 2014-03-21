@@ -1,90 +1,120 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.3'
+    }
+}
+
 allprojects {
     apply plugin: 'idea'
-    group = 'com.webninjapr.api.plugins'
-    version = '0.1'
+    group = 'com.webninjapr'
+    version = '0.0.1'
     defaultTasks 'clean', 'build'
 }
 
-idea.project {
-    jdkName = '1.7'
-
-    ipr.withXml { provider ->
-        def node = provider.asNode()
-
-        // Use GIT
-        def vcsConfig = node.component.find { it.'@name' == 'VcsDirectoryMappings' }
-        vcsConfig.mapping[0].'@vcs' = 'Git'
-
-        // Set Gradle home
-        def gradleSettings = node.appendNode('component', [name: 'GradleSettings'])
-        gradleSettings.appendNode('option', [name: 'SDK_HOME', value: gradle.gradleHomeDir])
-    }
-}
+project.ext.artifactBaseName = 'gradle-robovm-plugin'
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.11'
 }
 
-apply plugin: 'java'
+apply plugin: 'groovy'
 apply plugin: 'maven-publish'
+apply plugin: 'bintray'
 
-group = 'com.webninjapr.api.plugins'
-version = '0.1'
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        plugin(MavenPublication) {
             from components.java
+            artifactId artifactBaseName
+
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('name', 'Gradle Robovm plugin')
+                root.appendNode('description', 'Gradle plugin for compiling Robovm applications.')
+                root.appendNode('inceptionYear', '2014')
+                def license = root.appendNode('licenses').appendNode('license')
+                license.appendNode('name', 'GNU GPLv3 License')
+                license.appendNode('url', 'http://www.gnu.org/licenses/')
+                license.appendNode('distribution', 'repo')
+            }
+
+            artifact sourcesJar
+            artifact groovydocJar
         }
     }
-    repositories {
-        maven {
-            url "$buildDir/repo" // change to point to your repo, e.g. http://my.org/repo
-        }
+
+}
+
+bintray {
+    user = bintrayUserName
+    key = bintrayApiKey
+    publications = ['plugin'] // see publications closure
+    pkg {
+        repo = 'webninjapr-maven'
+        //userOrg = 'webninjapr.com'
+        name = 'gradle-robovm-plugin'
+        desc = 'Gradle plugin for Robovm'
+        licenses = ['GPL-3.0']
+        labels = ['robovm']
     }
 }
 
-apply plugin: 'groovy'
-
-//buildscript {
-//    repositories {
-//        mavenCentral()
-//    }
-//
-//    dependencies {
-//        classpath 'org.robovm:robovm-compiler:0.0.9'
-////        classpath 'org.robovm:robovm-rt:0.0.9'
-////        classpath 'org.robovm:robovm-objc:0.0.9'
-////        classpath 'org.robovm:robovm-cocoatouch:0.0.9'
-////        classpath 'org.robovm:robovm-cacerts-full:0.0.9'
-//    }
-//}
 
 repositories {
+    jcenter()
     mavenCentral()
 }
+
 
 configurations {
     includeInJar
 }
 
+sourceSets {
+    main.compileClasspath += configurations.includeInJar
+}
+
 dependencies{
     compile gradleApi()
     compile localGroovy()
-    includeInJar 'org.robovm:robovm-compiler:0.0.9'
-    configurations.compile.extendsFrom(configurations.includeInJar)
-//    compile 'org.robovm:robovm-rt:0.0.9'
-//    compile 'org.robovm:robovm-objc:0.0.9'
-//    compile 'org.robovm:robovm-cocoatouch:0.0.9'
-//    compile 'org.robovm:robovm-cacerts-full:0.0.9'
+    compile 'org.robovm:robovm-compiler:0.0.10'
 }
 
+task sourcesJar(type: Jar){
+    baseName artifactBaseName
+    classifier 'sources'
+    from sourceSets.main.allSource
+}
+
+task groovydocJar(type: Jar, dependsOn: groovydoc) {
+    baseName artifactBaseName
+    classifier 'groovydoc'
+    from groovydoc.destinationDir
+}
+
+
+artifacts {
+    archives sourcesJar
+    archives groovydocJar
+}
+
+
+assemble.dependsOn sourcesJar, groovydocJar
 //uberJar task From Gradle Cookbook || http://wiki.gradle.org/display/GRADLE/Cookbook#Cookbook-Creatingafatjar
 //http://www.techques.com/question/1-3445825/gradle---how-do-I-build-a-jar-with-a-lib-dir-with-other-jars-in-it
 jar {
     into('lib') {
         from configurations.includeInJar
     }
+}
+
+task printProps << {
+    println bintrayUserName
+    println bintrayApiKey
 }
 
 
