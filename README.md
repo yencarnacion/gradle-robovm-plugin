@@ -39,4 +39,13 @@ Include the following in your build.gradle:
         }
     }
 
+And include an extension that looks as follows:
+
+    robovm {
+        mainClass= 'HelloJava'
+        classpath = runtimeClasspath
+    }
+
+Replace mainClass with your main class.
+
 See [robovm-ios-samples](https://github.com/yencarnacion/robovm-ios-samples) to see the plugin in action
