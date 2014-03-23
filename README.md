@@ -1,3 +1,5 @@
+Note: to avoid confusion with the [gradle-robovm-plugin](https://github.com/jtakakura/gradle-robovm-plugin) the name of the plugin was changed to gradle-wn-robovm-plugin.  You can find the gradle-wn-robovm-plugin repository at [https://github.com/yencarnacion/gradle-wn-robovm-plugin](https://github.com/yencarnacion/gradle-wn-robovm-plugin).  This repository will remain as to serve as a breadcrumb for the new repository but will not longer be actively developed.  New development will occur in [https://github.com/yencarnacion/gradle-wn-robovm-plugin](https://github.com/yencarnacion/gradle-wn-robovm-plugin).
+
 gradle-robovm-plugin
 ================
 
